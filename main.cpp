@@ -60,8 +60,25 @@ std::vector<Vec3Df> customData;
 Vec3Df computeLighting(Vec3Df & vertexPos, Vec3Df & normal, unsigned int light, unsigned int index)
 {
 //la fonction pour calculer l'�clairage du mod�le.
-	float li = vertexPos.dotProduct(LightPos[0], normal);
-	float si = vertexPos.dotProduct(CamPos + LightPos[0], normal);
+
+	Vec3Df L = LightPos[0];
+	Vec3Df V = CamPos;
+	Vec3Df N = normal;
+	Vec3Df DiffuseColor = Vec3Df(1,1,1);
+
+	// normalize so the light intensity doesn't change with the distance to the light source
+	L.normalize();
+	V.normalize();
+	N.normalize();
+
+	Vec3Df H = V + L;
+
+	H.normalize();
+
+	float di = vertexPos.dotProduct(L, N); // diffuse intensity
+	float si = vertexPos.dotProduct(H, N); // specular intensity
+
+	//std::cout << li << endl;
 
 	switch(mode)
 	{
@@ -70,32 +87,42 @@ Vec3Df computeLighting(Vec3Df & vertexPos, Vec3Df & normal, unsigned int light, 
 			// dot(N, L) dot product between surface normal and light direction
 			//std::cout << light << endl;
 
-			return Vec3Df(0.1f,0.1f,0.1f).operator *=(li); // returna ratt vector
+			return DiffuseColor.operator *=(di);
 		}
 	case TOON_LIGHTING:
 		{
 
-			if ( li < 0.3 )
-				li = 0;
-			if ( li >= 0.3 )
-				li = 1.3;
+			//std::cout << di << endl;
+			if ( di < 0.2 )
+				di = 0;
+			else if ( di >= 0.2 )
+				di = 0.5;
 
-			if ( si < 3 )
+			//std::cout << di << endl;
+			std::cout << si << endl;
+
+			if ( si < 0.5 )
 				si = 0;
+			if ( si >= 0.5 )
+				si = 2;
 
-			//return Vec3Df(0.1f,0.1f,0.1f).operator *=(li) + si;
+			//std::cout << si << endl;
+
+			si = pow(si, 10); // (H,N)^a
+			//return DiffuseColor.operator *=(di).operator *=(si);
+			return DiffuseColor.operator *=(di);
 		}
 	case SPECULAR_LIGHTING:
 		{
 			// dot ( vektor imellan camPos och lightpos summa, normale )^nanting
 
 
-			si = pow(si, 1.2f);
-			return Vec3Df(0.1f,0.1f,0.1f).operator *=(si); // returna ratt vector
+			si = pow(si, 10); // (H,N)^a
+			return DiffuseColor.operator *=(si);
 		}
 	case COMBINED_LIGHTING:
 	{
-			return Vec3Df(0.1f,0.1f,0.1f).operator *=(li).operator +=(Vec3Df(si,si,si));
+			return DiffuseColor.operator *=(di).operator *=(si);
 		}
 
 	default:

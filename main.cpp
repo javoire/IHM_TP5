@@ -57,6 +57,7 @@ std::vector<Vec3Df> customData;
 
 
 
+
 Vec3Df computeLighting(Vec3Df & vertexPos, Vec3Df & normal, unsigned int light, unsigned int index)
 {
 //la fonction pour calculer l'�clairage du mod�le.

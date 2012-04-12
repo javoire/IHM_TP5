@@ -7,6 +7,7 @@
 #include <assert.h>
 #include "traqueboule.h"
 #include "mesh.h"
+#include "math.h"
 
 using namespace std;
 void computeLighting();
@@ -56,31 +57,45 @@ int SelectedVertex=-1;
 std::vector<Vec3Df> customData;
 
 
-
-
 Vec3Df computeLighting(Vec3Df & vertexPos, Vec3Df & normal, unsigned int light, unsigned int index)
 {
 //la fonction pour calculer l'�clairage du mod�le.
+	float li = vertexPos.dotProduct(LightPos[0], normal);
+	float si = vertexPos.dotProduct(CamPos + LightPos[0], normal);
+
 	switch(mode)
 	{
 	case ORIGINAL_LIGHTING:
 		{
 			// dot(N, L) dot product between surface normal and light direction
 			//std::cout << light << endl;
-			float li = vertexPos.dotProduct(LightPos[0], normal);
-			return Vec3Df(0.3f,0.3f,0.3f).operator *=(li); // returna ratt vector
+
+			return Vec3Df(0.1f,0.1f,0.1f).operator *=(li); // returna ratt vector
 		}
 	case TOON_LIGHTING:
 		{
-			return Vec3Df(1,0,0);
+
+			if ( li < 0.3 )
+				li = 0;
+			if ( li >= 0.3 )
+				li = 1.3;
+
+			if ( si < 3 )
+				si = 0;
+
+			//return Vec3Df(0.1f,0.1f,0.1f).operator *=(li) + si;
 		}
 	case SPECULAR_LIGHTING:
 		{
-			return Vec3Df(1,1,0);
+			// dot ( vektor imellan camPos och lightpos summa, normale )^nanting
+
+
+			si = pow(si, 1.2f);
+			return Vec3Df(0.1f,0.1f,0.1f).operator *=(si); // returna ratt vector
 		}
 	case COMBINED_LIGHTING:
 	{
-			return Vec3Df(0,0,1);
+			return Vec3Df(0.1f,0.1f,0.1f).operator *=(li).operator +=(Vec3Df(si,si,si));
 		}
 
 	default:

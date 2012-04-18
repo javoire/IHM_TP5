@@ -65,7 +65,8 @@ Vec3Df computeLighting(Vec3Df & vertexPos, Vec3Df & normal, unsigned int light, 
 {
 //la fonction pour calculer l'�clairage du mod�le.
 
-	Vec3Df L = LightPos[0];
+//	Vec3Df L = LightPos[0];
+	Vec3Df L = CamPos;
 	Vec3Df V = CamPos;
 	Vec3Df N = normal;
 	Vec3Df DiffuseColor = Vec3Df(1,1,1);

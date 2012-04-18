@@ -56,6 +56,10 @@ int SelectedVertex=-1;
 //un tableau suppl�mentaire utilis� pour faire des changements locals (plus tard dans l'exercise)
 std::vector<Vec3Df> customData;
 
+template<typename T>
+T saturate(T val) {// constrain values between 0-1
+    return std::min<float>(std::max<float>(val, 0), 1);
+}
 
 Vec3Df computeLighting(Vec3Df & vertexPos, Vec3Df & normal, unsigned int light, unsigned int index)
 {
@@ -65,6 +69,7 @@ Vec3Df computeLighting(Vec3Df & vertexPos, Vec3Df & normal, unsigned int light, 
 	Vec3Df V = CamPos;
 	Vec3Df N = normal;
 	Vec3Df DiffuseColor = Vec3Df(1,1,1);
+	Vec3Df SpecularColor = DiffuseColor;
 
 	// normalize so the light intensity doesn't change with the distance to the light source
 	L.normalize();
@@ -75,55 +80,45 @@ Vec3Df computeLighting(Vec3Df & vertexPos, Vec3Df & normal, unsigned int light, 
 
 	H.normalize();
 
-	float di = vertexPos.dotProduct(L, N); // diffuse intensity
-	float si = vertexPos.dotProduct(H, N); // specular intensity
-
-	//std::cout << li << endl;
+	float di = saturate<float>(vertexPos.dotProduct(L, N)); // diffuse intensity [0-1]
+	float shininess = 20;
+	float si = pow(saturate<float>(vertexPos.dotProduct(H, N)), shininess); // specular intensity [0-1]
 
 	switch(mode)
 	{
 	case ORIGINAL_LIGHTING:
 		{
 			// dot(N, L) dot product between surface normal and light direction
-			//std::cout << light << endl;
 
-			return DiffuseColor.operator *=(di);
+//			std::cout << di << endl;
+
+			return DiffuseColor * di;
 		}
 	case TOON_LIGHTING:
 		{
 
-			//std::cout << di << endl;
-			if ( di < 0.2 )
+			if ( di < 0.5 )
 				di = 0;
-			else if ( di >= 0.2 )
+			if ( di >= 0.5 )
 				di = 0.5;
-
-			//std::cout << di << endl;
-			std::cout << si << endl;
 
 			if ( si < 0.5 )
 				si = 0;
 			if ( si >= 0.5 )
-				si = 2;
+				si = 1;
 
-			//std::cout << si << endl;
-
-			si = pow(si, 10); // (H,N)^a
-			//return DiffuseColor.operator *=(di).operator *=(si);
-			return DiffuseColor.operator *=(di);
+			return DiffuseColor * di + SpecularColor * si;
 		}
 	case SPECULAR_LIGHTING:
 		{
 			// dot ( vektor imellan camPos och lightpos summa, normale )^nanting
 
-
-			si = pow(si, 10); // (H,N)^a
-			return DiffuseColor.operator *=(si);
+			return SpecularColor * si;
 		}
 	case COMBINED_LIGHTING:
-	{
-			return DiffuseColor.operator *=(di).operator *=(si);
-		}
+		{
+			return DiffuseColor * di + SpecularColor * si;
+	}
 
 	default:
 		return Vec3Df(0,1,0);

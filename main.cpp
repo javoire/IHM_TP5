@@ -26,7 +26,7 @@ unsigned int H_fen = 800;  // hauteur fenetre
 //COMMENCEZ A LIRE ICI!!!
 
 //couleur du d�cors
-float BackgroundColor[]={0,0,0};
+float BackgroundColor[]={0,0,0.2};
 // Diff�rents modes d'affichage
 enum Mode{ ORIGINAL_LIGHTING=0, TOON_LIGHTING, SPECULAR_LIGHTING, COMBINED_LIGHTING, MODIFY_LIGHTING, MODIFY_SPEC, SURFACE_EDIT};
 Mode mode=ORIGINAL_LIGHTING;
@@ -65,8 +65,7 @@ Vec3Df computeLighting(Vec3Df & vertexPos, Vec3Df & normal, unsigned int light, 
 {
 //la fonction pour calculer l'�clairage du mod�le.
 
-//	Vec3Df L = LightPos[0];
-	Vec3Df L = CamPos;
+	Vec3Df L = LightPos[0];
 	Vec3Df V = CamPos;
 	Vec3Df N = normal;
 	Vec3Df DiffuseColor = Vec3Df(1,1,1);
@@ -82,6 +81,7 @@ Vec3Df computeLighting(Vec3Df & vertexPos, Vec3Df & normal, unsigned int light, 
 	H.normalize();
 
 	float di = saturate<float>(vertexPos.dotProduct(L, N)); // diffuse intensity [0-1]
+	float contourThresh = saturate<float>(vertexPos.dotProduct(V, N)); // contour...
 	float shininess = 20;
 	float si = pow(saturate<float>(vertexPos.dotProduct(H, N)), shininess); // specular intensity [0-1]
 
@@ -92,6 +92,11 @@ Vec3Df computeLighting(Vec3Df & vertexPos, Vec3Df & normal, unsigned int light, 
 			// dot(N, L) dot product between surface normal and light direction
 
 //			std::cout << di << endl;
+
+//			float t = 0.5;
+//
+//			if (contourThresh < t )
+//				di = 0;
 
 			return DiffuseColor * di;
 		}
@@ -130,6 +135,13 @@ Vec3Df computeLighting(Vec3Df & vertexPos, Vec3Df & normal, unsigned int light, 
 //pour g�rer les interactions avec l'utilisateur
 void userInteraction(const Vec3Df & selectedPos, const Vec3Df & selectedNormal, int selectedIndex, Vec3Df origin, Vec3Df direction)
 {
+
+	Vec3Df L = LightPos[0];
+
+	LightPos[0] = selectedNormal * selectedPos.distance(selectedPos, origin) * 0.7; // this is 0 angle but we want 90 angle, orthogonal
+
+	//cout << origin.dotProduct()
+
 }
 
 

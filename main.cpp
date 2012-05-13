@@ -47,7 +47,6 @@ std::vector<Vec3Df> LightColor;
 //la position de la cam�ra COURRANTE!
 Vec3Df CamPos = Vec3Df(0.0f,0.0f,-4.0f);
 
-
 //afficher le sommet choisi touche "s"
 bool ShowSelectedVertex=false;
 //les deux variables apr�s sont utilis�es plus tard dans le TP.
@@ -65,10 +64,13 @@ Vec3Df computeLighting(Vec3Df & vertexPos, Vec3Df & normal, unsigned int light, 
 {
 //la fonction pour calculer l'�clairage du mod�le.
 
-	Vec3Df L = LightPos[0];
+//  for ( int i = 0; i < LightPos.size(); i++) {
+
+  	Vec3Df L = LightPos[light];
 	Vec3Df V = CamPos;
 	Vec3Df N = normal;
-	Vec3Df DiffuseColor = Vec3Df(1,1,1);
+	//	Vec3Df DiffuseColor = Vec3Df(1,1,1)*0.4;
+	Vec3Df DiffuseColor = LightColor[light]*0.4;
 	Vec3Df SpecularColor = DiffuseColor;
 
 	// normalize so the light intensity doesn't change with the distance to the light source
@@ -99,6 +101,7 @@ Vec3Df computeLighting(Vec3Df & vertexPos, Vec3Df & normal, unsigned int light, 
 //				di = 0;
 
 			return DiffuseColor * di;
+
 		}
 	case TOON_LIGHTING:
 		{
@@ -129,6 +132,7 @@ Vec3Df computeLighting(Vec3Df & vertexPos, Vec3Df & normal, unsigned int light, 
 	default:
 		return Vec3Df(0,1,0);
 	}
+	//}
 }
 
 
@@ -136,9 +140,11 @@ Vec3Df computeLighting(Vec3Df & vertexPos, Vec3Df & normal, unsigned int light, 
 void userInteraction(const Vec3Df & selectedPos, const Vec3Df & selectedNormal, int selectedIndex, Vec3Df origin, Vec3Df direction)
 {
 
-	Vec3Df L = LightPos[0];
+	// ortho
+	//LightPos[0] = selectedNormal * selectedPos.distance(selectedPos, origin) * 0.7; // this is 0 angle but we want 90 angle, orthogonal
 
-	LightPos[0] = selectedNormal * selectedPos.distance(selectedPos, origin) * 0.7; // this is 0 angle but we want 90 angle, orthogonal
+	//specularity on area clicked
+	LightPos[SelectedLight] = selectedNormal * selectedPos.distance(selectedPos, origin) * 0.7; // this is 0 angle but we want 90 angle, orthogonal
 
 	//cout << origin.dotProduct()
 
@@ -161,93 +167,142 @@ void keyboard(unsigned char key, int x, int y)
 		return;
 	}
 	
+	float red = LightColor[SelectedLight][0];
+	float green = LightColor[SelectedLight][1];
+	float blue = LightColor[SelectedLight][2];
+
 	switch (key)
     {
-	//A remplir
-	case 'r':
-	break;
-	case 'R':
-	break;
-	case 'g':
-	break;
-	case 'G':
-	break;
-	case 'b':
-	break;
-	case 'B':
-	break;
 
-	//a pas y toucher!!!
+		//A remplir
+		case 'r':
+			green += 0.1;
+			if (green > 1 )
+				green = 1;
 
-//ARRETEZ DE LIRE � PARTIR D'ICI!!!
-//________________________________
-//________________________________
-//________________________________
-//________________________________
-//________________________________
+			blue += 0.1;
+			if (blue > 1 )
+				blue = 1;
+		break;
+		case 'R':
+			green -= 0.1;
+			if (green < 0 )
+				green = 0.1;
+
+			blue -= 0.1;
+			if (blue < 0 )
+				blue = 0.1;
+
+		break;
+		case 'g':
+			red += 0.1;
+			if (red > 1 )
+				red = 1;
+			blue += 0.1;
+			if (blue > 1 )
+				blue = 1;
+		break;
+		case 'G':
+			red -= 0.1;
+			if (red < 0 )
+				red = 0.1;
+
+			blue -= 0.1;
+			if (blue < 0 )
+				blue = 0.1;
+		break;
+		case 'b':
+			green += 0.1;
+			if (green > 1 )
+				green = 1;
+			red += 0.1;
+			if (red > 1 )
+				red = 1;
+		break;
+		case 'B':
+			red -= 0.1;
+			if (red < 0 )
+				red = 0.1;
+
+			green -= 0.1;
+			if (green < 0 )
+				green = 0.1;
+		break;
+
+		//a pas y toucher!!!
+
+	//ARRETEZ DE LIRE � PARTIR D'ICI!!!
+	//________________________________
+	//________________________________
+	//________________________________
+	//________________________________
+	//________________________________
 
 
-	case 'l':
-		{
-			LightPos[SelectedLight]=getCameraPosition();
-			return;
-		}
-	case 'L':
-		{
-			LightPos.push_back(getCameraPosition());
-			LightColor.push_back(Vec3Df(1,1,1));
-			return;
-		}
-	case '+':
-		{
-			++SelectedLight;
-			if (SelectedLight>=LightPos.size())
-				SelectedLight=0;
-			return;
-		}
-	case '-':
-		{
-			--SelectedLight;
-			if (SelectedLight<0)
-				SelectedLight=LightPos.size()-1;
-			return;
-		}
-	case 'U':
-		{
-			updateAlways=!updateAlways;
-			return;
-		}
-
-	case 'N':
-		{
-			for (unsigned int i=0; i<MyMesh.vertices.size();++i)
+		case 'l':
 			{
-				customData[i]=Vec3Df(0,0,0);
+				LightPos[SelectedLight]=getCameraPosition();
+				return;
 			}
-			LightPos.resize(1);
-			LightPos[0]=Vec3Df(0,0,3);
-			LightColor.resize(1);
-			LightColor[0]=Vec3Df(1,1,1);
-			SelectedLight=0;
-		}
+		case 'L':
+			{
+				LightPos.push_back(getCameraPosition());
+				LightColor.push_back(Vec3Df(1,1,1));
+				return;
+			}
+		case '+':
+			{
+				++SelectedLight;
+				if (SelectedLight>=LightPos.size())
+					SelectedLight=0;
+				return;
+			}
+		case '-':
+			{
+				--SelectedLight;
+				if (SelectedLight<0)
+					SelectedLight=LightPos.size()-1;
+				return;
+			}
+		case 'U':
+			{
+				updateAlways=!updateAlways;
+				return;
+			}
 
-	case 'u':
+		case 'N':
+			{
+				for (unsigned int i=0; i<MyMesh.vertices.size();++i)
+				{
+					customData[i]=Vec3Df(0,0,0);
+				}
+				LightPos.resize(1);
+				LightPos[0]=Vec3Df(0,0,3);
+				LightColor.resize(1);
+				LightColor[0]=Vec3Df(1,1,1);
+				SelectedLight=0;
+			}
+
+		case 'u':
+			{
+				//mise a jour de l'eclairage
+				computeLighting();
+				return;
+			}
+		case 's':
 		{
-			//mise a jour de l'eclairage
-			computeLighting();
-			return;
+			ShowSelectedVertex=!ShowSelectedVertex;
 		}
-	case 's':
-	{
-		ShowSelectedVertex=!ShowSelectedVertex;
-	}
-	case ' ':
-		{
-			//vous n'avez pas besoin de regarder cette fonction
-			dealWithUserInput(x,y);
-		}
+		case ' ':
+			{
+				//vous n'avez pas besoin de regarder cette fonction
+				dealWithUserInput(x,y);
+			}
 	}
 
+	LightColor[SelectedLight][0] = red;
+	LightColor[SelectedLight][1] = green;
+	LightColor[SelectedLight][2] = blue;
 }
 
 
